@@ -13,6 +13,9 @@ class SuperOverFlow : CricketScoreBaseClass(), Commentary, PredictScore {
     private val outcomeList = arrayListOf<Int>()
     private val bowlerName = IndianTeam.values().random()
     private val batsmanList = AustralianTeam.values()
+    var strikeBatsman: AustralianTeam? = null
+    var nonStrikeBatsman: AustralianTeam? = null
+    var superOverEnded = false
 
     fun startSuperOverFlow() {
         inputSuperOverConstraints()
@@ -23,7 +26,7 @@ class SuperOverFlow : CricketScoreBaseClass(), Commentary, PredictScore {
         generateRandomBowlingType()
         inputTeam1Score()
         inputTeam2Data()
-        predictBallByBallOutcome()
+        outputSuperOverOutcome()
     }
 
     private fun generateRandomBowlingType() {
@@ -33,33 +36,28 @@ class SuperOverFlow : CricketScoreBaseClass(), Commentary, PredictScore {
         }
     }
 
-    private fun predictBallByBallOutcome() {
-        for (i in 0 until 6) {
-            println("$bowlerName bowled ${randomBowlingType[i]} ball")
-        }
-        var strikeBatsman = batsmanList[0]
-        var nonStrikeBatsman = batsmanList[1]
+    private fun predictBallByBallOutcome(ball:Int):Boolean {
+        println("$bowlerName bowled ${randomBowlingType[ball]} ball")
+        strikeBatsman = batsmanList[0]
+        nonStrikeBatsman = batsmanList[1]
+            println("$strikeBatsman played ${shotTimingList[ball]} ${shotTypeList[ball]} shot")
 
-        for (i in 0 until 6) {
-            println("$strikeBatsman played ${shotTimingList[i]} ${shotTypeList[i]} shot")
-
-            if (outcomeList[i] == 0) {
+            if (outcomeList[ball] == 0) {
                 totalAvailableWickets--
                 strikeBatsman = batsmanList[2]
-            } else if (outcomeList[i] == 1) {
+            } else if (outcomeList[ball] == 1) {
                 val currentBatsman = strikeBatsman
                 strikeBatsman = nonStrikeBatsman
                 nonStrikeBatsman = currentBatsman
-                australianTeamScore += outcomeList[i]
+                australianTeamScore += outcomeList[ball]
             } else {
-                australianTeamScore += outcomeList[i]
+                australianTeamScore += outcomeList[ball]
             }
             if (totalAvailableWickets <= 0 || australianTeamScore > indiaSuperOverScore) {
-                break
+                return true
             }
-            println("${handleCommentaryOutput(outcomeList[i])}")
-        }
-        outputSuperOverOutcome()
+            println("${handleCommentaryOutput(outcomeList[ball])}")
+        return false
     }
 
     private fun outputSuperOverOutcome() {
@@ -78,8 +76,13 @@ class SuperOverFlow : CricketScoreBaseClass(), Commentary, PredictScore {
             shotTimingsType?.let {
                 shotTimingList.add(it)
                 outcomeList.add(predictOutcome(it))
+                superOverEnded = predictBallByBallOutcome(i)
+            }
+            if(superOverEnded) {
+                break
             }
         }
+
     }
 
     private fun inputTeam1Score() {
